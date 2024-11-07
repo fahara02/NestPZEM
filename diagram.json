@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "author": "Faruk Hannan",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": -32.2,
+      "left": 144,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 100.8,
+      "left": 124.25,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 63.8,
+      "left": 240,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -72,
+      "left": 210.65,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn3",
+      "top": 150.2,
+      "left": 249.6,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 225.6,
+      "left": 210.65,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "btn1:2.l", "esp:23", "green", [ "h-38.4", "v-38.2" ] ],
+    [ "r1:1", "btn1:2.l", "green", [ "h0" ] ],
+    [ "btn1:1.l", "esp:3V3", "red", [ "h-153.6", "v48" ] ],
+    [ "esp:GND.1", "r1:2", "black", [ "h-33.41", "v67.2", "h182.4" ] ],
+    [ "r2:1", "btn1:1.l", "red", [ "h0" ] ],
+    [ "esp:22", "r2:2", "green", [ "h139.24", "v-86.4" ] ],
+    [ "btn2:1.l", "r2:2", "green", [ "h0", "v-28.8" ] ],
+    [ "btn2:2.l", "r1:2", "black", [ "h-9.6", "v48.2" ] ],
+    [ "btn3:1.l", "r2:1", "red", [ "h0", "v-38.4", "h86.4", "v-67.2" ] ],
+    [ "btn3:2.l", "r3:1", "limegreen", [ "h0" ] ],
+    [ "esp:21", "btn3:2.l", "green", [ "h33.64", "v96" ] ],
+    [ "r3:2", "esp:GND.1", "black", [ "h-288", "v-10.8" ] ]
+  ],
+  "dependencies": {}
+}

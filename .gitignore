@@ -1,0 +1,9 @@
+.pio
+.vscode
+cache
+managed_components
+dependencies.lock
+sdkconfig.esp32dev
+sdkconfig.esp32-c3
+sdkconfig.esp32-s3
+sdkconfig.esp32-s2

@@ -1,0 +1,101 @@
+# Clang-Format configuration mimicking ChatGPT style
+
+Language: Cpp
+BasedOnStyle: Google
+
+# Indentation and formatting rules
+IndentWidth: 4
+ContinuationIndentWidth: 4
+UseTab: Never
+TabWidth: 4
+
+# Alignment
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+AlignTrailingComments: true
+AlignConsecutiveAssignments: None
+AlignConsecutiveMacros: None
+
+# Braces
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterControlStatement: Always
+  BeforeElse: true
+  BeforeCatch: true
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+# Line breaking
+ColumnLimit: 100
+BreakBeforeBinaryOperators: NonAssignment
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
+BreakStringLiterals: true
+BreakBeforeConceptDeclarations: true
+BreakBeforeTernaryOperators: false
+
+# Comment handling
+ReflowComments: true
+SpacesBeforeTrailingComments: 1
+CommentPragmas: '^ IWYU pragma:'
+
+# Spacing
+SpaceBeforeParens: Never
+SpaceInEmptyParentheses: false
+SpaceBeforeRangeBasedForLoopColon: false
+SpaceInEmptyBlock: false
+SpacesInAngles: false
+SpacesInContainerLiterals: false
+SpacesInSquareBrackets: false
+SpacesInParentheses: false
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeCaseColon: false
+
+# Line breaks and newlines
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments: true
+
+# Namespace and include handling
+CompactNamespaces: false
+IncludeBlocks: Preserve
+SortIncludes: false
+SortUsingDeclarations: true
+IncludeCategories:
+  - Regex: '^"(llvm|llvm-c|clang|clang-c)/'
+    Priority: 2
+    SortPriority: 0
+  - Regex: '^(<|"(gtest|gmock|isl|json|catch2|cmocka)/)'
+    Priority: 3
+    SortPriority: 0
+  - Regex: '.*'
+    Priority: 1
+    SortPriority: 0
+
+# Formatting for macros and functions
+IndentPPDirectives: BeforeHash
+IndentRequires: true
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentGotoLabels: true
+
+# Miscellaneous
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+DerivePointerAlignment: false
+DisableFormat: false
+UseCRLF: false

@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package pz;
+
+enum PZEMModel {
+    PZEM004T = 0;
+    PZEM003 = 1;
+    NOT_SET = 2;
+}
+
+enum Phase {
+    SINGLE_PHASE = 0;
+    RED_PHASE = 1;
+    YELLOW_PHASE = 2;
+    BLUE_PHASE = 3;
+}
+
+enum State {
+    INIT = 0;
+    ACTIVE = 1;
+    IDLE = 2;
+    BUSY = 3;
+    POLL = 4;
+    UPDATE_FAIL = 5;
+    NOLOAD = 6;
+    NO_VOLTAGE = 7;
+}
+
+message NamePlate {
+    PZEMModel model = 1;
+    uint32 id = 2;
+    uint32 slaveAddress = 3;
+    uint32 lineNo = 4;
+    Phase phase = 5;
+   string meterName = 6;
+}
+
+message PowerMeasure{
+    float voltage = 1;
+    float current = 2;
+    float power = 3;
+    float energy = 4;
+    float frequency = 5;
+    float pf = 6;
+    float alarms = 7;
+ 
+}
+
+message JobCard {
+    NamePlate info = 1;
+    PowerMeasure pm = 2;
+    int64 poll_us = 3;
+    int64 lastUpdate_us = 4;
+    int64 dataAge_ms = 5;
+    bool dataStale = 6;
+    State deviceState = 7;   // Updated to use State enum directly
+}
