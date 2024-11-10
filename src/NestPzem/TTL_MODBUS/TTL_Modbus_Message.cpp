@@ -1,34 +1,34 @@
-#include "ModbusMessage.h"
+#include "TTL_Modbus_Message.h"
 #include <cstring> // For memcpy
 static const char* MODBUS__MSG = "ModbusMsg";
 namespace tmbus
 {
 // Constructor for TX message
-ModbusMessage::ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd)
+TTLModbusMessage::TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd)
 {
     frame.txFrame.initials.slaveAddr = slaveAddr;
     frame.txFrame.initials.cmd = cmd;
 }
 
-ModbusMessage::ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const uint16_t regAddr,
-                             const uint16_t valueOrNumRegs) :
-    ModbusMessage(slaveAddr, cmd)
+TTLModbusMessage::TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd,
+                                   const uint16_t regAddr, const uint16_t valueOrNumRegs) :
+    TTLModbusMessage(slaveAddr, cmd)
 {
     frame.txFrame.regAddr = regAddr;
     frame.txFrame.valueOrNumRegs = valueOrNumRegs;
 }
 
 // Constructor for RX message
-ModbusMessage::ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const bool isValid)
+TTLModbusMessage::TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const bool isValid)
 {
     frame.rxFrame.initials.slaveAddr = slaveAddr;
     frame.rxFrame.initials.cmd = cmd;
     isRXValid = isValid;
 }
 
-ModbusMessage::ModbusMessage(uint8_t slaveAddr, uint8_t cmd, uint8_t byteCount, const uint8_t* data,
-                             bool isValid) :
-    ModbusMessage(slaveAddr, cmd, isValid)
+TTLModbusMessage::TTLModbusMessage(uint8_t slaveAddr, uint8_t cmd, uint8_t byteCount,
+                                   const uint8_t* data, bool isValid) :
+    TTLModbusMessage(slaveAddr, cmd, isValid)
 {
     frame.rxFrame.byteCount = byteCount;
     if(byteCount <= MAX_RIR_RESPONSE_LENGTH)
@@ -36,7 +36,7 @@ ModbusMessage::ModbusMessage(uint8_t slaveAddr, uint8_t cmd, uint8_t byteCount, 
         memcpy(frame.rxFrame.data, data, byteCount);
     }
 }
-bool ModbusMessage::isValidFunctionCode(const uint8_t* buf)
+bool TTLModbusMessage::isValidFunctionCode(const uint8_t* buf)
 {
     if(buf == nullptr)
     {
@@ -69,7 +69,7 @@ bool ModbusMessage::isValidFunctionCode(const uint8_t* buf)
     return false;
 }
 
-bool ModbusMessage::decodeMessage(const uint8_t* buf, const uint16_t len, bool checkLength)
+bool TTLModbusMessage::decodeMessage(const uint8_t* buf, const uint16_t len, bool checkLength)
 {
     if(buf == nullptr)
     {
@@ -112,7 +112,8 @@ bool ModbusMessage::decodeMessage(const uint8_t* buf, const uint16_t len, bool c
         return false;
     }
 }
-bool ModbusMessage::serializeRESETMessage(uint8_t* buffer, uint16_t len, bool isReceiverBigEndian)
+bool TTLModbusMessage::serializeRESETMessage(uint8_t* buffer, uint16_t len,
+                                             bool isReceiverBigEndian)
 {
     if(len != TTL_MODBUS_ENERGY_RST_FRAME_SIZE)
     {
@@ -135,7 +136,7 @@ bool ModbusMessage::serializeRESETMessage(uint8_t* buffer, uint16_t len, bool is
     }
 }
 
-bool ModbusMessage::serializeMessage(uint8_t* buffer, uint16_t len, bool isReceiverBigEndian)
+bool TTLModbusMessage::serializeMessage(uint8_t* buffer, uint16_t len, bool isReceiverBigEndian)
 {
     uint16_t dataLength = len - 2;
 
@@ -154,7 +155,7 @@ bool ModbusMessage::serializeMessage(uint8_t* buffer, uint16_t len, bool isRecei
     }
 }
 
-bool ModbusMessage::serializeData(uint8_t* buffer, uint16_t datalength, bool isReceiverBigEndian)
+bool TTLModbusMessage::serializeData(uint8_t* buffer, uint16_t datalength, bool isReceiverBigEndian)
 {
     if(datalength < TTL_MODBUS_REPORT_ADDR_FRAME_SIZE - 2)
     {
@@ -183,7 +184,7 @@ bool ModbusMessage::serializeData(uint8_t* buffer, uint16_t datalength, bool isR
         }
     }
 }
-bool ModbusMessage::setCRC(uint8_t* buffer, uint16_t len)
+bool TTLModbusMessage::setCRC(uint8_t* buffer, uint16_t len)
 {
     uint16_t crc = Utility::CRC::calculate(buffer, len - 2);
 
@@ -206,29 +207,35 @@ bool ModbusMessage::setCRC(uint8_t* buffer, uint16_t len)
     updateCRC_TX(crc);
     return true;
 }
-uint8_t ModbusMessage::getSlaveAddress() const { return frame.txFrame.initials.slaveAddr; }
-uint8_t ModbusMessage::getCommand() const { return frame.txFrame.initials.cmd; }
-uint16_t ModbusMessage::getRegAddress() const { return frame.txFrame.regAddr; }
-uint16_t ModbusMessage::getValues() const { return frame.txFrame.valueOrNumRegs; }
+uint8_t TTLModbusMessage::getSlaveAddress() const { return frame.txFrame.initials.slaveAddr; }
+uint8_t TTLModbusMessage::getCommand() const { return frame.txFrame.initials.cmd; }
+uint16_t TTLModbusMessage::getRegAddress() const { return frame.txFrame.regAddr; }
+uint16_t TTLModbusMessage::getValues() const { return frame.txFrame.valueOrNumRegs; }
 
-const uint8_t* ModbusMessage::getValidRawData() const { return frame.rxFrame.data; }
-const ModbusMessage::Frame::TxFrame* ModbusMessage::getTXFrame() const { return &frame.txFrame; }
-const ModbusMessage::Frame::RxFrame* ModbusMessage::getRXFrame() const { return &frame.rxFrame; }
+const uint8_t* TTLModbusMessage::getValidRawData() const { return frame.rxFrame.data; }
+const TTLModbusMessage::Frame::TxFrame* TTLModbusMessage::getTXFrame() const
+{
+    return &frame.txFrame;
+}
+const TTLModbusMessage::Frame::RxFrame* TTLModbusMessage::getRXFrame() const
+{
+    return &frame.rxFrame;
+}
 
-uint16_t ModbusMessage::getCRC_RX() const { return crcRX; }
-uint16_t ModbusMessage::getCRC_TX() const { return crcTX; }
+uint16_t TTLModbusMessage::getCRC_RX() const { return crcRX; }
+uint16_t TTLModbusMessage::getCRC_TX() const { return crcTX; }
 
-uint8_t ModbusMessage::getRXDataSize() const { return sizeof(frame.rxFrame.data); }
-uint8_t ModbusMessage::getByteCount() const { return frame.rxFrame.byteCount; }
-uint8_t ModbusMessage::get_TX_FrameSize() const
+uint8_t TTLModbusMessage::getRXDataSize() const { return sizeof(frame.rxFrame.data); }
+uint8_t TTLModbusMessage::getByteCount() const { return frame.rxFrame.byteCount; }
+uint8_t TTLModbusMessage::get_TX_FrameSize() const
 {
     return 3 + sizeof(crcTX); // slaveAddr + cmd + data + crc
 }
-uint8_t ModbusMessage::get_RX_FrameSize() const
+uint8_t TTLModbusMessage::get_RX_FrameSize() const
 {
     return 3 + frame.rxFrame.byteCount + sizeof(crcRX); // slaveAddr + cmd + byteCount + data + crc
 }
-void ModbusMessage::printSerializedMessage(const uint8_t* buffer, uint16_t len)
+void TTLModbusMessage::printSerializedMessage(const uint8_t* buffer, uint16_t len)
 {
     for(uint16_t i = 0; i < len; ++i)
     {

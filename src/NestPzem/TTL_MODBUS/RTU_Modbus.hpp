@@ -5,7 +5,7 @@
 #include "ModbusDefaults.h"
 #include "IModbusDevice.hpp"
 #include "esp_log.h"
-#include "ModbusMessage.h"
+#include "TTL_Modbus_Message.h"
 
 namespace tmbus
 {
@@ -40,8 +40,8 @@ class RTUModbus
     uint16_t getValues() const;
     uint8_t getByteCount() const;
     const uint8_t* getValidRawData() const;
-    const ModbusMessage::Frame::TxFrame* getTXFrame() const;
-    const ModbusMessage::Frame::RxFrame* getRXFrame() const;
+    const TTLModbusMessage::Frame::TxFrame* getTXFrame() const;
+    const TTLModbusMessage::Frame::RxFrame* getRXFrame() const;
     uint16_t getCRC_RX() const;
     uint16_t getCRC_TX() const;
     uint8_t getRXDataSize() const;

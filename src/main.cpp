@@ -18,8 +18,7 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "pData.pb.h"
-using namespace pzemCore;
-using namespace tmbus;
+#include "PZEMModbus.hpp"
 
 #define FORMAT_LITTLEFS_IF_FAILED true
 #define PZEM_UART_PORT UART_NUM_1
@@ -28,20 +27,20 @@ using namespace tmbus;
 #define PZEM_ID 39
 #define PZEM_ADDRESS 1
 
-PZEMModel model = PZEMModel::PZEM004T;
+pzemCore::PZEMModel model = pzemCore::PZEMModel::PZEM004T;
 uart_config_t uartConfig = {.baud_rate = 9600,
                             .data_bits = UART_DATA_8_BITS,
                             .parity = UART_PARITY_DISABLE,
                             .stop_bits = UART_STOP_BITS_1,
                             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
-UARTManager uartManager(PZEM_UART_PORT, uartConfig, RX_PIN, TX_PIN);
+tmbus::UARTManager uartManager(PZEM_UART_PORT, uartConfig, RX_PIN, TX_PIN);
 
 std::unique_ptr<pzemCore::PZEMDevice> pzemDevice = nullptr;
 
 void setup()
 {
     Serial.begin(115200);
-    pzemDevice = std::make_unique<pzemCore::PZEMDevice>(PZEMModel::PZEM004T, PZEM_ID, PZEM_ADDRESS);
+    pzemDevice = std::make_unique<pzemCore::PZEMDevice>(model, PZEM_ID, PZEM_ADDRESS);
 }
 
 void loop()

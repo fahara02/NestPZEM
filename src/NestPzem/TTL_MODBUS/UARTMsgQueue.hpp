@@ -7,7 +7,7 @@
 #include "driver/uart.h"
 #include <functional>
 #include "NestUtility.hpp"
-#include "ModbusMessage.h"
+#include "TTL_Modbus_Message.h"
 #include "esp_log.h"
 
 namespace tmbus
@@ -48,7 +48,7 @@ struct receive
     const uint8_t addr;
     const uint8_t cmd;
     const uint8_t size;
-    ModbusMessage msg;
+    TTLModbusMessage msg;
 
     receive(const uint8_t* data, const uint8_t size) :
         isValid(Utility::CRC::check(data, size)),

@@ -1,5 +1,5 @@
-#ifndef MODBUS_MESSAGE_H
-#define MODBUS_MESSAGE_H
+#ifndef TTL_MODBUS_MESSAGE_H
+#define TTL_MODBUS_MESSAGE_H
 #include "Arduino.h"
 #include <cstdint>
 #include <cstring>
@@ -11,7 +11,7 @@ namespace tmbus
 {
 static const char* MODBUS_MSG_TAG __attribute__((unused)) = "MODBUS_MESSAGE";
 
-struct ModbusMessage
+struct TTLModbusMessage
 {
     struct Frame
     {
@@ -38,7 +38,7 @@ struct ModbusMessage
 
         } __attribute__((packed)) rxFrame;
     } __attribute__((packed)) frame;
-    ~ModbusMessage() = default;
+    ~TTLModbusMessage() = default;
 
    private:
     uint16_t crcRX = 0xFFFF; // CRC field
@@ -50,16 +50,16 @@ struct ModbusMessage
 
    public:
     // Default constructor
-    ModbusMessage() = default;
+    TTLModbusMessage() = default;
 
     // Constructor for TX message
-    ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd);
-    ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const uint16_t regAddr,
-                  const uint16_t valueOrNumRegs);
+    TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd);
+    TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const uint16_t regAddr,
+                     const uint16_t valueOrNumRegs);
     // Constructor for RX message
-    ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const bool isValid);
-    ModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const uint8_t byteCount,
-                  const uint8_t* data, const bool isValid);
+    TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const bool isValid);
+    TTLModbusMessage(const uint8_t slaveAddr, const uint8_t cmd, const uint8_t byteCount,
+                     const uint8_t* data, const bool isValid);
 
     // Function declarations
     bool decodeMessage(const uint8_t* buf, const uint16_t len, bool checkLength = true);
