@@ -21,3 +21,10 @@ Clone the repository or download the zip file and add it to your PlatformIO proj
 
 ```bash
 git clone https://github.com/fahara02/NestPzem.git
+
+## UsingProtocolBuffer
+- **STEP1** : install protoc in your system
+- **STEP2** : define your proto file under proto folder
+- **STEP3** : auto generate the header in terminal inside proto folder 
+```bash
+  protoc --nanopb_opt=-v --nanopb_out=. pData.proto
