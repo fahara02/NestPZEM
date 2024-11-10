@@ -7,7 +7,7 @@ PZEMDevice::PZEMDevice(PZEMModel model, uint8_t id, uint8_t addr, uint8_t lineNo
                        const char* nametag) :
     PZEMClient(id),
     IModbusDevice(id, model),
-    PowerMeter(getModbusRegisters(), _model, _id, _addr, lineNo, phase, nametag),
+    PowerMeter(getModbusRegisters(), model, id, addr, lineNo, phase, nametag),
     _model(model),
     _id(id),
     _addr(addr),

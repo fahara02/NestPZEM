@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFi.h>
 #include "FS.h"
 #include <LittleFS.h>
 #include <time.h>
@@ -24,8 +25,18 @@
 #define PZEM_UART_PORT UART_NUM_1
 #define RX_PIN 16
 #define TX_PIN 17
-#define PZEM_ID 39
-#define PZEM_ADDRESS 1
+constexpr uint8_t PZEM_ID = 39;
+constexpr uint8_t PZEM_ADDRESS = 1;
+
+#ifndef MY_SSID
+    #define MY_SSID "Torongo"
+#endif
+#ifndef MY_PASS
+    #define MY_PASS "torongo@2021"
+#endif
+
+char ssid[] = MY_SSID; // SSID and ...
+char pass[] = MY_PASS; // password for the WiFi network used
 
 pzemCore::PZEMModel model = pzemCore::PZEMModel::PZEM004T;
 uart_config_t uartConfig = {.baud_rate = 9600,
@@ -40,7 +51,20 @@ std::unique_ptr<pzemCore::PZEMDevice> pzemDevice = nullptr;
 void setup()
 {
     Serial.begin(115200);
+
+    WiFi.begin(ssid, pass);
+    delay(200);
+    while(WiFi.status() != WL_CONNECTED)
+    {
+        Serial.print(". ");
+        delay(500);
+    }
+    IPAddress wIP = WiFi.localIP();
+    Serial.printf("WIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);
+    Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID, PZEM_ADDRESS);
     pzemDevice = std::make_unique<pzemCore::PZEMDevice>(model, PZEM_ID, PZEM_ADDRESS);
+    Serial.printf("id of pzem device is %d", pzemDevice->getId());
+    pzemDevice->autopoll(true);
 }
 
 void loop()
