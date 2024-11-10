@@ -1,5 +1,6 @@
 .pio
 .vscode
+.build
 cache
 managed_components
 dependencies.lock
