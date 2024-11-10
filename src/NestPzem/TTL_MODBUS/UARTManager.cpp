@@ -5,7 +5,7 @@
 #include "ModbusDefaults.h"
 namespace tmbus
 {
-
+UARTManager::~UARTManager() = default;
 void UARTManager::init(const uart_config_t& uartcfg, int gpio_rx, int gpio_tx)
 {
     // TODO: catch port init errors

@@ -63,7 +63,7 @@ class ModbusRegisters
     ModbusRegisters(pzemCore::PZEMModel model, uint8_t id) :
         _model(model), _id(id), _callback(nullptr)
     {
-        for(size_t i = 0; i < MAX_UNIQUE_REGSITERS; ++i)
+        for(size_t i = 0; i < MAX_UNIQUE_REGISTERS; ++i)
         {
             _registers[i] = Register();
         }
@@ -97,8 +97,8 @@ class ModbusRegisters
     using OnRegisterUpdateCallback =
         std::function<void(bool registerUpdated, ModbusRegisters::Register* reg)>;
     OnRegisterUpdateCallback _callback;
-    std::array<tmbus::ModbusRegisters::Register, MAX_UNIQUE_REGSITERS> _registers;
-    std::array<uint16_t, MAX_UNIQUE_REGSITERS> _validAddress;
+    std::array<tmbus::ModbusRegisters::Register, MAX_UNIQUE_REGISTERS> _registers;
+    std::array<uint16_t, MAX_UNIQUE_REGISTERS> _validAddress;
     bool isValidAddress(uint16_t address) const;
 
    public:

@@ -24,7 +24,7 @@ class UARTManager : public UARTMsgQueue
         init(ucfg, gpio_rx, gpio_tx);
     }
 
-    virtual ~UARTManager();
+    ~UARTManager() override;
 
     const uart_port_t port;
 

@@ -15,6 +15,14 @@
 static const char* MEMORY_TAG __attribute__((unused)) = "MEMORY";
 namespace Utility
 {
+struct PairHash
+{
+    template <class T1, class T2>
+    std::size_t operator()(const std::pair<T1, T2>& pair) const
+    {
+        return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+    }
+};
 
 class CRC
 {

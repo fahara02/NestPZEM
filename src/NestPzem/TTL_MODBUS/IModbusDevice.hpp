@@ -21,12 +21,14 @@ class IModbusDevice
    private:
     uint8_t _id;
     PZEMModel _model;
+    bool registersSetup;
     std::array<std::pair<uint8_t, uint16_t>, MAX_COMMANDS> _lastSendCommands;
 
    public:
     explicit IModbusDevice(uint8_t id, PZEMModel model) :
         _id(id),
         _model(model),
+        registersSetup(false),
         _modbusRegisters(std::make_shared<tmbus::ModbusRegisters>(model, id))
     {
         // ESP_LOGI(IMODBUS_TAG, "Modbus register ptr in IModbusDevice: %p",

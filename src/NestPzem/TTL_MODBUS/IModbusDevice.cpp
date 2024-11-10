@@ -6,45 +6,53 @@ namespace pzemCore
 
 void IModbusDevice::setRegisters(PZEMModel m)
 {
-    Utility::MeterMap& metermap = Utility::MeterMap::getInstance();
-    meterMapPtr = metermap.sendMapReference(m);
-    // ESP_LOGI("IModbusDevice", "Meter map pointer: %p", meterMapPtr);
-
-    if(meterMapPtr && !meterMapPtr->empty())
+    if(!registersSetup)
     {
-        // ESP_LOGI("IModbusDevice", "Loading Meter map ref for model: %s",
-        //          Utility::ToString::model(m));
-        _modbusRegisters->loadRegisters(*meterMapPtr);
+        registersSetup = true;
+        Utility::MeterMap& metermap = Utility::MeterMap::getInstance();
+        meterMapPtr = metermap.sendMapReference(m);
+        // ESP_LOGI("IModbusDevice", "Meter map pointer: %p", meterMapPtr);
 
-        // Initialize registers based on the model
-        if(m == PZEMModel::PZEM004T)
+        if(meterMapPtr && !meterMapPtr->empty())
         {
-            RIR_BEGIN = tmbus::PZ004T_RIR_DATA_BEGIN;
-            RIR_LENGTH = tmbus::PZ004T_RIR_DATA_LEN;
-            RHR_BEGIN = tmbus::PZ004T_RHR_DATA_BEGIN;
-            RHR_LENGTH = tmbus::PZ004_RHR_DATA_LEN;
-            RIR_MAX_RESP_LENGTH = tmbus::PZ004T_RIR_RESP_LEN;
-            numRIR = tmbus::PZ004T_IR_NUMS;
-            numRHR = tmbus::PZ004T_HR_NUMS;
-            numPRG = tmbus::PZ004T_PRG_NUMS;
+            // ESP_LOGI("IModbusDevice", "Loading Meter map ref for model: %s",
+            //          Utility::ToString::model(m));
+            _modbusRegisters->loadRegisters(*meterMapPtr);
+
+            // Initialize registers based on the model
+            if(m == PZEMModel::PZEM004T)
+            {
+                RIR_BEGIN = tmbus::PZ004T_RIR_DATA_BEGIN;
+                RIR_LENGTH = tmbus::PZ004T_RIR_DATA_LEN;
+                RHR_BEGIN = tmbus::PZ004T_RHR_DATA_BEGIN;
+                RHR_LENGTH = tmbus::PZ004_RHR_DATA_LEN;
+                RIR_MAX_RESP_LENGTH = tmbus::PZ004T_RIR_RESP_LEN;
+                numRIR = tmbus::PZ004T_IR_NUMS;
+                numRHR = tmbus::PZ004T_HR_NUMS;
+                numPRG = tmbus::PZ004T_PRG_NUMS;
+            }
+            else if(m == PZEMModel::PZEM003)
+            {
+                RIR_BEGIN = tmbus::PZ003_RIR_DATA_BEGIN;
+                RIR_LENGTH = tmbus::PZ003_RIR_DATA_LEN;
+                RHR_BEGIN = tmbus::PZ003_RHR_DATA_BEGIN;
+                RHR_LENGTH = tmbus::PZ003_RHR_DATA_LEN;
+                RIR_MAX_RESP_LENGTH = tmbus::PZ003_RIR_RESP_LEN;
+                numRIR = tmbus::PZ003_IR_NUMS;
+                numRHR = tmbus::PZ003_HR_NUMS;
+                numPRG = tmbus::PZ003_PRG_NUMS;
+            }
         }
-        else if(m == PZEMModel::PZEM003)
+        else
         {
-            RIR_BEGIN = tmbus::PZ003_RIR_DATA_BEGIN;
-            RIR_LENGTH = tmbus::PZ003_RIR_DATA_LEN;
-            RHR_BEGIN = tmbus::PZ003_RHR_DATA_BEGIN;
-            RHR_LENGTH = tmbus::PZ003_RHR_DATA_LEN;
-            RIR_MAX_RESP_LENGTH = tmbus::PZ003_RIR_RESP_LEN;
-            numRIR = tmbus::PZ003_IR_NUMS;
-            numRHR = tmbus::PZ003_HR_NUMS;
-            numPRG = tmbus::PZ003_PRG_NUMS;
+            ESP_LOGE("IModbusDevice", "Meter map for model %d not found or invalid",
+                     static_cast<int>(m));
+            return;
         }
     }
     else
     {
-        ESP_LOGE("IModbusDevice", "Meter map for model %d not found or invalid",
-                 static_cast<int>(m));
-        return;
+        ESP_LOGI("IModbusDevice", "registers setup already done");
     }
 }
 

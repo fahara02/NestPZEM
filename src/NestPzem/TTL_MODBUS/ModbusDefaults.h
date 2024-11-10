@@ -9,10 +9,12 @@ static const size_t MAX_COMMANDS = 3;
 static constexpr size_t METER_MAP_004T_SIZE = 10;
 static constexpr size_t METER_MAP_003_SIZE = 10;
 
-static constexpr size_t MAX_UNIQUE_REGSITERS = 13; // any model 16 bit or 32 bit
-static constexpr size_t MAX_IR_NUMS = 7;           // any model
-static constexpr size_t MAX_HR_NUMS = 3;           // any model
-static constexpr size_t MAX_PRG_NUMS = 2;          // any model
+static constexpr size_t MAX_UNIQUE_REGISTERS =
+    10 + 4; // any model 16 bit or 32 bit , it is actually 10 but extra 4 to accomodate all
+            // variations in enum
+static constexpr size_t MAX_IR_NUMS = 7;  // any model
+static constexpr size_t MAX_HR_NUMS = 3;  // any model
+static constexpr size_t MAX_PRG_NUMS = 2; // any model
 
 static constexpr size_t MAX_RIR_RESPONSE_LENGTH = 20; // any model
 static constexpr size_t MAX_RESPONSE_SIZE = 25;       // any model = 25
@@ -85,13 +87,13 @@ enum class RegisterType { IR, HR, PRG, NONE };
 enum class OperationType { READONLY, WRITEONLY, READ_WRITE, NONE };
 struct MeterInfo
 {
-    RegisterType regType : 4; // Bitfield for compact size
-    OperationType opType : 4; // Bitfield for compact size
+    RegisterType regType : 4;
+    OperationType opType : 4;
     uint16_t startAddress;
     uint16_t length;
     uint16_t scaleFactor;
-    char name[20]; // Fixed-size char array for embedded systems
-    char unit[10]; // Fixed-size char array for embedded systems
+    char name[20];
+    char unit[10];
 
     // Default constructor
     MeterInfo() :
@@ -101,8 +103,8 @@ struct MeterInfo
         length(0),
         scaleFactor(1)
     {
-        std::memset(name, 0, sizeof(name)); // Initialize to empty string
-        std::memset(unit, 0, sizeof(unit)); // Initialize to empty string
+        std::memset(name, 0, sizeof(name));
+        std::memset(unit, 0, sizeof(unit));
     }
 
     // Parameterized constructor

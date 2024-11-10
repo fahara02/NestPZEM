@@ -171,14 +171,21 @@ bool ModbusRegisters::update(const uint16_t address, const uint8_t numRegs, cons
 
     return true;
 }
-
 void ModbusRegisters::loadRegisters(
     const std::array<std::pair<MeterType, MeterInfo>, METER_MAP_004T_SIZE>& meterMap)
 {
-    std::unordered_set<uint16_t> addressSet; // Temporary set for unique addresses
+    std::unordered_set<std::pair<RegisterType, uint16_t>, Utility::PairHash> uniqueAddressSet;
 
     for(const auto& [meterType, meterInfo]: meterMap)
     {
+        uint8_t index = static_cast<uint8_t>(meterType);
+        if(index >= MAX_UNIQUE_REGISTERS)
+        {
+            ESP_LOGW(MODBUS_REG_TAG, "Skipping register %s, meterType index %d exceeds bounds.",
+                     meterInfo.name, index);
+            continue;
+        }
+
         if(meterInfo.regType == RegisterType::IR || meterInfo.regType == RegisterType::HR
            || meterInfo.regType == RegisterType::PRG)
         {
@@ -187,24 +194,24 @@ void ModbusRegisters::loadRegisters(
                 Register(meterType, &meterInfo, meterInfo.startAddress, meterInfo.length, 0,
                          meterInfo.scaleFactor);
 
-            // Insert the address into the set
-            auto result = addressSet.insert(meterInfo.startAddress); // Returns a pair
+            // Create a unique (regType, startAddress) key
+            auto addressKey = std::make_pair(meterInfo.regType, meterInfo.startAddress);
+            auto result = uniqueAddressSet.insert(addressKey);
 
-            // Only add to _validAddress if it was a new address
-            if(result.second && _validAddressCount < MAX_UNIQUE_REGSITERS)
+            // Insert into the unique set based on (regType, startAddress)
+            if(result.second)
             {
-                _validAddress[_validAddressCount++] =
-                    meterInfo.startAddress; // Add address to valid address array
-            }
-            else if(!result.second)
-            {
-                ESP_LOGW(MODBUS_REG_TAG, "Duplicate address detected: 0x%04X",
-                         meterInfo.startAddress);
-            }
-            else
-            {
-                ESP_LOGE(MODBUS_REG_TAG, "Max valid addresses reached. Cannot add address: 0x%04X",
-                         meterInfo.startAddress);
+                // Only add to _validAddress if space is available
+                if(_validAddressCount < MAX_UNIQUE_REGISTERS)
+                {
+                    _validAddress[_validAddressCount++] = meterInfo.startAddress;
+                }
+                else
+                {
+                    ESP_LOGE(MODBUS_REG_TAG,
+                             "Max valid addresses reached. Cannot add address: 0x%04X",
+                             meterInfo.startAddress);
+                }
             }
         }
         else
@@ -213,6 +220,7 @@ void ModbusRegisters::loadRegisters(
         }
     }
 }
+
 const ModbusRegisters::Register* ModbusRegisters::getRegister(MeterType type) const
 {
     return &_registers[static_cast<uint8_t>(type)];
@@ -236,12 +244,6 @@ uint16_t ModbusRegisters::adress(MeterType type) const
 uint16_t ModbusRegisters::length(MeterType type) const
 {
     return _registers[static_cast<uint8_t>(type)].length;
-}
-void ModbusRegisters::printAllRegisters()
-{
-    printRegisters(RegisterType::IR);
-    printRegisters(RegisterType::HR);
-    printRegisters(RegisterType::PRG);
 }
 
 const void tmbus::ModbusRegisters::getPowerMeasures(pzemCore::powerMeasure& pm)
@@ -270,7 +272,12 @@ const void tmbus::ModbusRegisters::getPowerMeasures(pzemCore::powerMeasure& pm)
 
     pm = pzemCore::powerMeasure(values, _model);
 }
-
+void ModbusRegisters::printAllRegisters()
+{
+    printRegisters(RegisterType::IR);
+    printRegisters(RegisterType::HR);
+    printRegisters(RegisterType::PRG);
+}
 void ModbusRegisters::printRegisters(RegisterType regType)
 {
     switch(regType)
@@ -323,12 +330,12 @@ void ModbusRegisters::printRegisters(RegisterType regType)
     };
 
     // Iterate through the registers and print only those matching the requested type
-    for(int i = 0; i < MAX_UNIQUE_REGSITERS; i++)
+    for(size_t i = 0; i < _registers.size(); i++)
     {
         const Register& reg = _registers[i];
         if(reg.info == nullptr)
         {
-            return;
+            continue;
         }
         // Check if the register type matches the requested type
         if(reg.info->regType == regType)

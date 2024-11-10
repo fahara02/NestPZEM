@@ -16,7 +16,6 @@ PZEMDevice::PZEMDevice(PZEMModel model, uint8_t id, uint8_t addr, uint8_t lineNo
     modbusRegisters(getModbusRegisters())
 {
     PZEMDevice::init();
-    handleEvent(Event::NEW_DEVICE);
 }
 
 PZEMDevice::~PZEMDevice() {}
@@ -28,7 +27,7 @@ void PZEMDevice::init()
         {
             isBigEndian = true;
         }
-        IModbusDevice::setRegisters(_model);
+        handleEvent(Event::NEW_DEVICE);
         _initialised = true;
     }
 }
