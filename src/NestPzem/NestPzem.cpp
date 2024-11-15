@@ -127,6 +127,17 @@ const PZEMDevice* meterPool::pzem_by_id(uint8_t id) const
 
     return nullptr;
 }
+pzemCore::PZEMDevice* meterPool::getPZEMForUpdate(uint8_t id)
+{
+    for(auto& meter: meters)
+    {
+        if(meter->pzem->id == id)
+        {
+            return meter->pzem.get();
+        }
+    }
+    return nullptr;
+}
 
 void meterPool::print()
 {
@@ -181,8 +192,8 @@ void meterPool::updateMetrics()
     for(auto i = meters.cbegin(); i != meters.cend(); ++i)
     {
         uint8_t id = i->get()->pzem->id;
-        const auto* pzem = pzem_by_id(id);
-        if(pzem) pzem->updateJobCard();
+        auto* pzem = getPZEMForUpdate(id);
+        if(pzem) pzem->updateMetrics();
     }
 }
 void meterPool::resetEnergyCounter(uint8_t pzem_id)

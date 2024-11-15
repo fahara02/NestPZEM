@@ -28,6 +28,7 @@ class meterPool : public Poller<meterPool>
 
     std::shared_ptr<PZEMPort> port_by_id(uint8_t id);
     const PZEMDevice* pzem_by_id(uint8_t id) const;
+    pzemCore::PZEMDevice* getPZEMForUpdate(uint8_t id);
 
    public:
     meterPool() :

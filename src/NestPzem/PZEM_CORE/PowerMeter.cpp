@@ -8,7 +8,7 @@ const std::array<uint16_t, PowerMeter::maxJobCardRegisters>& PowerMeter::getOutB
 {
     return _outBox;
 }
-
+const pzemCore::powerMeasure& PowerMeter::getMeasures() const { return _jobcard.pm; }
 State PowerMeter::getState() const { return _state.load(); }
 uint8_t PowerMeter::getaddr() const { return static_cast<uint8_t>(tmbus::SLAVE_ADDRESS::ADDR_ANY); }
 
@@ -34,9 +34,16 @@ bool PowerMeter::getMeter(const tmbus::ModbusRegisters::Register* reg)
     }
     return success;
 }
+
+void PowerMeter::updateMetrics()
+{
+    updateMeters();
+    updateJobCard();
+    updateOutBox();
+}
+
 bool PowerMeter::updateOutBox()
 {
-    ESP_LOGI(PM_TAG, "+--------------------UPDATING OUTBOX-------------------------------+");
     const JobCard& jobCard = getJobCard();
     uint16_t index = 0;
 
@@ -94,21 +101,12 @@ bool PowerMeter::updateOutBox()
     return index <= maxJobCardRegisters;
 }
 
-void PowerMeter::updateMetrics()
-{
-    updateMeters();
-    updateJobCard();
-    updateOutBox();
-}
-const pzemCore::powerMeasure& PowerMeter::getMeasures() const
-{
-    _registers->getPowerMeasures(_jobcard.pm);
-    return _jobcard.pm;
-}
+void PowerMeter::updateLatestMeasures() { _registers->getPowerMeasures(_jobcard.pm); }
 
-bool PowerMeter::updateJobCard() const
+bool PowerMeter::updateJobCard()
 {
-    const powerMeasure& pm = getMeasures();
+    updateLatestMeasures();
+    const powerMeasure& pm = _jobcard.pm;
 
     if(pm.isValid())
     {

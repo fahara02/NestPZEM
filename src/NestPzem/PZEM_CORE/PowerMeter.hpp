@@ -146,7 +146,7 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     void updateMetrics();
     virtual bool resetEnergyCounter() = 0;
 
-    bool updateJobCard() const;
+    bool updateJobCard();
     bool updateOutBox();
     void handleEvent(Event e);
 
@@ -156,8 +156,9 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     void onRegisterUpdated(bool registerUpdated, tmbus::ModbusRegisters::Register* reg);
 
     const JobCard& getJobCard() const;
-    const std::array<uint16_t, maxJobCardRegisters>& getOutBox() const;
     const pzemCore::powerMeasure& getMeasures() const;
+    const std::array<uint16_t, maxJobCardRegisters>& getOutBox() const;
+    void updateLatestMeasures();
     bool getMeter(const tmbus::ModbusRegisters::Register* reg);
     State getState() const;
 
