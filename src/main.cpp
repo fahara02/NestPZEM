@@ -46,7 +46,7 @@ uart_config_t uartConfig = {.baud_rate = 9600,
                             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
 tmbus::UARTManager uartManager(PZEM_UART_PORT, uartConfig, RX_PIN, TX_PIN);
 
-std::unique_ptr<pzemCore::PZEMDevice> pzemDevice = nullptr;
+std::shared_ptr<pzemCore::PZEMDevice> pzemDevice = nullptr;
 
 void setup()
 {
@@ -62,9 +62,12 @@ void setup()
     IPAddress wIP = WiFi.localIP();
     Serial.printf("WIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);
     Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID, PZEM_ADDRESS);
-    pzemDevice = std::make_unique<pzemCore::PZEMDevice>(model, PZEM_ID, PZEM_ADDRESS);
+    pzemDevice = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID, PZEM_ADDRESS);
     Serial.printf("id of pzem device is %d", pzemDevice->getId());
     pzemDevice->autopoll(true);
+    auto modbus_server = std::make_unique<ModbusServerTCPasync>();
+
+    PZEMModbus::getInstance(std::move(modbus_server), pzemDevice).startServer();
 }
 
 void loop()

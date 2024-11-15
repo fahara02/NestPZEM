@@ -115,9 +115,11 @@ struct JobCard
 class PowerMeter : public Poller<pzemCore::PowerMeter>
 {
    private:
+    static constexpr uint8_t maxJobCardRegisters = 38;
     std::atomic<State> _state{State::INIT};
     // tmbus::ModbusRegisters& _registers;
     std::shared_ptr<tmbus::ModbusRegisters> _registers;
+    std::array<uint16_t, maxJobCardRegisters> _outBox;
 
    public:
     explicit PowerMeter(std::shared_ptr<tmbus::ModbusRegisters> mr, PZEMModel m, uint8_t id,
@@ -145,6 +147,7 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     virtual bool resetEnergyCounter() = 0;
 
     bool updateJobCard() const;
+    bool updateOutBox();
     void handleEvent(Event e);
 
     void resetPoll() const override;
@@ -153,6 +156,7 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     void onRegisterUpdated(bool registerUpdated, tmbus::ModbusRegisters::Register* reg);
 
     const JobCard& getJobCard() const;
+    const std::array<uint16_t, maxJobCardRegisters>& getOutBox() const;
     const pzemCore::powerMeasure& getMeasures() const;
     bool getMeter(const tmbus::ModbusRegisters::Register* reg);
     State getState() const;
