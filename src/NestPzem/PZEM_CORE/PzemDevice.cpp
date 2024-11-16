@@ -14,38 +14,26 @@ PZEMDevice::PZEMDevice(PZEMModel model, uint8_t id, uint8_t addr, uint8_t lineNo
     _cfg(),
     _rtu(this, _addr),
     modbusRegisters(getModbusRegisters()),
-     _updateTaskHandle(nullptr), _stopTask(false) 
+    _updateTaskHandle(nullptr),
+    _stopTask(false)
 {
     PZEMDevice::init();
-       ESP_LOGI(DEVICE_TAG, "Initializing PZEMDevice with ID: %d, Address: %d", id, addr);
-
-    // Create the updateMeters task
-    if (xTaskCreatePinnedToCore(
-            [](void* param) { static_cast<PZEMDevice*>(param)->updateMetersTask(); },
-            "PZEM_UpdateMeters",
-            4096,  // Adjust stack size as needed
-            this,
-            1,  // Task priority
-            &_updateTaskHandle,
-            1) == pdPASS) {
-        ESP_LOGI(DEVICE_TAG, "updateMeters task created successfully.");
-    } else {
-        ESP_LOGW(DEVICE_TAG, "Failed to create updateMeters task.");
-    }
-
 }
 
-PZEMDevice::~PZEMDevice() { 
-     if (_updateTaskHandle) {
-        _stopTask.store(true);  // Signal the task to stop
-        vTaskDelay(pdMS_TO_TICKS(100));  // Give the task time to exit
+PZEMDevice::~PZEMDevice()
+{
+    if(_updateTaskHandle)
+    {
+        _stopTask.store(true);          // Signal the task to stop
+        vTaskDelay(pdMS_TO_TICKS(100)); // Give the task time to exit
         _updateTaskHandle = nullptr;
-        if (_updateSemaphore) {
-            vSemaphoreDelete(_updateSemaphore);  // Clean up the semaphore
+        if(_updateSemaphore)
+        {
+            vSemaphoreDelete(_updateSemaphore); // Clean up the semaphore
         }
         ESP_LOGI(DEVICE_TAG, "updateMeters task stopped.");
     }
-    }
+}
 void PZEMDevice::init()
 {
     if(!_initialised)
@@ -53,6 +41,19 @@ void PZEMDevice::init()
         if(_model == PZEMModel::PZEM003 || _model == PZEMModel::PZEM004T)
         {
             isBigEndian = true;
+        }
+        ESP_LOGI(DEVICE_TAG, "Initializing PZEMDevice with ID: %d, Address: %d", _id, _addr);
+
+        if(xTaskCreatePinnedToCore(
+               [](void* param) { static_cast<PZEMDevice*>(param)->updateMetersTask(); },
+               "PZEM_UpdateMeters", 4096, this, 1, &_updateTaskHandle, 1)
+           == pdPASS)
+        {
+            ESP_LOGI(DEVICE_TAG, "updateMeters task created successfully.");
+        }
+        else
+        {
+            ESP_LOGW(DEVICE_TAG, "Failed to create updateMeters task.");
         }
         handleEvent(Event::NEW_DEVICE);
         _initialised = true;
@@ -68,6 +69,25 @@ void PZEMDevice::rx_sink(const tmbus::receive* msg)
         if(rx_callback) rx_callback(id, msg);
     }
 }
+void PZEMDevice::updateMetersTask()
+{
+    ESP_LOGI(DEVICE_TAG, "Starting updateMeters task.");
+
+    while(!_stopTask.load())
+    {
+        // Wait for the semaphore (i.e., a signal to update)
+        if(xSemaphoreTake(_updateSemaphore, portMAX_DELAY) == pdTRUE)
+        {
+            ESP_LOGI(DEVICE_TAG, "Semaphore received, updating meters...");
+            // Perform the update
+            updateMeters();
+            updateJobCard();
+            vTaskDelay(pdMS_TO_TICKS(1000)); // Adjust delay as required
+        }
+    }
+    ESP_LOGI(DEVICE_TAG, "Exiting updateMeters task.");
+    vTaskDelete(nullptr); // Delete the task when finished
+}
 bool PZEMDevice::updateMeters()
 {
     if(!txMsgQueue)
@@ -79,7 +99,6 @@ bool PZEMDevice::updateMeters()
     resetPoll();
     txMsgQueue->txEnQueue(command);
     return true;
-    
 }
 
 bool PZEMDevice::resetEnergyCounter()

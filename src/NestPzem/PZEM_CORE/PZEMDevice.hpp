@@ -27,10 +27,6 @@ class PZEMDevice : public PZEMClient, public IModbusDevice, public PowerMeter
     uint8_t _addr;
     DeviceConfig _cfg;
     RTUModbus _rtu;
-    
-
-
-
 
    public:
     explicit PZEMDevice(PZEMModel model, uint8_t id, uint8_t addr, uint8_t lineNo = 0,
@@ -62,35 +58,13 @@ class PZEMDevice : public PZEMClient, public IModbusDevice, public PowerMeter
     const char* getNameTag() const { return _nameTag; }
     PZEMModel getModel() const { return _model; }
 
-      void updateMetersTask() {
-        ESP_LOGI(DEVICE_TAG, "Starting updateMeters task.");
-
-    while (!_stopTask.load()) {
-        // Wait for the semaphore (i.e., a signal to update)
-        if (xSemaphoreTake(_updateSemaphore, portMAX_DELAY) == pdTRUE) {
-            ESP_LOGI(DEVICE_TAG, "Semaphore received, updating meters...");
-
-            // Perform the update
-            updateMeters();
-            updateJobCard();
-
-            // Add a delay to control task frequency (optional)
-            vTaskDelay(pdMS_TO_TICKS(1000));  // Adjust delay as required
-        }
-    }
-
-    ESP_LOGI(DEVICE_TAG, "Exiting updateMeters task.");
-    vTaskDelete(nullptr);  // Delete the task when finished
-    }
-
-
+    void updateMetersTask();
 
    private:
     bool _initialised = false;
     bool isBigEndian;
-    // tmbus::ModbusRegisters& modbusRegisters = getModbusRegisters();
     std::shared_ptr<tmbus::ModbusRegisters> modbusRegisters;
-     TaskHandle_t _updateTaskHandle;
+    TaskHandle_t _updateTaskHandle;
     std::atomic<bool> _stopTask;
     transmit* readSingleRegister(tmbus::MeterType meterType, bool waitForReply = true);
     transmit* writeSingleRegister(tmbus::MeterType meterType, uint16_t value,
