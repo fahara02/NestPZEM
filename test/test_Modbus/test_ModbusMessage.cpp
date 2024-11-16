@@ -1,7 +1,7 @@
 #include <unity.h>
 #include <cstring>
 #include "Arduino.h"
-#include "ModbusMessage.h"
+#include "TTL_Modbus_Message.h"
 #include "ModbusMessageTest.hpp"
 #include "NestUtility.hpp"
 
@@ -22,7 +22,7 @@ void ModbusMessageTest::test_read_voltage_from_RIR()
 {
     // Example usage for a read input register command
 
-    ModbusMessage msg(0x01, 0x04, 0x0002, 0x0001); // Reading 1 register starting from 0x0000
+    TTLModbusMessage msg(0x01, 0x04, 0x0002, 0x0001); // Reading 1 register starting from 0x0000
     size_t READ_MESSAGE_SIZE = TTL_MODBUS_NORMAL_FRAME_SIZE;
     uint8_t messageBuffer[READ_MESSAGE_SIZE] = {0};
     msg.serializeMessage(messageBuffer, READ_MESSAGE_SIZE, true);
@@ -50,7 +50,7 @@ void ModbusMessageTest::test_read_voltage_from_RIR()
 void ModbusMessageTest::test_read_alarm_threshold_from_RHR()
 {
     // Example usage for a read holding register command
-    ModbusMessage msg(0x01, 0x03, 0x0005, 0x0002); // Reading 2 registers starting from 0x0005
+    TTLModbusMessage msg(0x01, 0x03, 0x0005, 0x0002); // Reading 2 registers starting from 0x0005
     size_t READ_MESSAGE_SIZE = TTL_MODBUS_NORMAL_FRAME_SIZE;
     uint8_t messageBuffer[READ_MESSAGE_SIZE] = {0};
 
@@ -75,7 +75,7 @@ void ModbusMessageTest::test_read_alarm_threshold_from_RHR()
 void ModbusMessageTest::test_write_modbus_address_to_register()
 {
     // Example usage for a write single register command
-    ModbusMessage msg(0x01, 0x06, 0x000A, 0x0001); // Writing value 0x0001 to register 0x000A
+    TTLModbusMessage msg(0x01, 0x06, 0x000A, 0x0001); // Writing value 0x0001 to register 0x000A
     size_t READ_MESSAGE_SIZE = TTL_MODBUS_NORMAL_FRAME_SIZE;
     uint8_t messageBuffer[READ_MESSAGE_SIZE] = {0};
 
@@ -102,7 +102,8 @@ void ModbusMessageTest::test_read_min_register_value()
 {
     // Test case for reading from the minimum register value (0x0000)
     Serial.println("Starting test_read_min_register_value");
-    ModbusMessage msg(0x01, 0x04, 0x0000, 0x0001); // Reading 1 register from 0x0000
+
+    TTLModbusMessage msg(0x01, 0x04, 0x0000, 0x0001); // Reading 1 register from 0x0000
     size_t READ_MESSAGE_SIZE = TTL_MODBUS_NORMAL_FRAME_SIZE;
     uint8_t messageBuffer[READ_MESSAGE_SIZE] = {0};
     msg.serializeMessage(messageBuffer, READ_MESSAGE_SIZE, true);

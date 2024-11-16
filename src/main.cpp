@@ -25,8 +25,10 @@
 #define PZEM_UART_PORT UART_NUM_1
 #define RX_PIN 16
 #define TX_PIN 17
-constexpr uint8_t PZEM_ID = 39;
-constexpr uint8_t PZEM_ADDRESS = 1;
+constexpr uint8_t PZEM_ID_1 = 39;
+constexpr uint8_t PZEM_ADDRESS_1 = 1;
+constexpr uint8_t PZEM_ID_2 = 43;
+constexpr uint8_t PZEM_ADDRESS_2 = 2;
 
 #ifndef MY_SSID
     #define MY_SSID "Torongo"
@@ -46,8 +48,8 @@ uart_config_t uartConfig = {.baud_rate = 9600,
                             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
 tmbus::UARTManager uartManager(PZEM_UART_PORT, uartConfig, RX_PIN, TX_PIN);
 
-std::shared_ptr<pzemCore::PZEMDevice> pzemDevice = nullptr;
-
+std::shared_ptr<pzemCore::PZEMDevice> pzemDevice1 = nullptr;
+std::shared_ptr<pzemCore::PZEMDevice> pzemDevice2 = nullptr;
 void setup()
 {
     Serial.begin(115200);
@@ -61,24 +63,21 @@ void setup()
     }
     IPAddress wIP = WiFi.localIP();
     Serial.printf("WIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);
-    Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID, PZEM_ADDRESS);
-    pzemDevice = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID, PZEM_ADDRESS);
-    Serial.printf("id of pzem device is %d", pzemDevice->getId());
-    pzemDevice->autopoll(true);
+    Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID_1, PZEM_ADDRESS_1);
+    pzemDevice1 = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID_1, PZEM_ADDRESS_1);
+    Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID_2, PZEM_ADDRESS_2);
+    pzemDevice2 = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID_2, PZEM_ADDRESS_2);
+
+
+    Serial.printf("id of pzem device is %d", pzemDevice1->getId());
+    pzemDevice1->autopoll(true);
+    pzemDevice2->autopoll(true);
     auto modbus_server = std::make_unique<ModbusServerTCPasync>();
 
-    PZEMModbus::getInstance(std::move(modbus_server), pzemDevice).startServer();
+    PZEMModbus::getInstance(std::move(modbus_server), pzemDevice1,pzemDevice2).startServer();
 }
 
-void loop()
-{
-    if(pzemDevice)
-    {
-        auto mReg1 = pzemDevice->getModbusRegisters();
-        mReg1->printAllRegisters();
-    }
-    delay(5000);
-}
+void loop() { vTaskDelete(NULL); }
 
 //   unsigned char buffer[128];
 //     size_t message_length;

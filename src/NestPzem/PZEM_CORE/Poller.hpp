@@ -39,10 +39,10 @@ class Poller
         T* device = static_cast<T*>(pvTimerGetTimerID(xTimer));
         if(device)
         {
-            ESP_LOGI(POLLER_TAG, "Polling device...... ");
+            
 
             device->updateMetrics();
-            device->print();
+           // device->print();
         }
     };
 };

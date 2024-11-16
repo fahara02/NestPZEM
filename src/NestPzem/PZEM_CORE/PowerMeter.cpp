@@ -37,8 +37,9 @@ bool PowerMeter::getMeter(const tmbus::ModbusRegisters::Register* reg)
 
 void PowerMeter::updateMetrics()
 {
-    updateMeters();
-    updateJobCard();
+    if (_updateSemaphore) {
+        xSemaphoreGive(_updateSemaphore);
+    }
     updateOutBox();
 }
 

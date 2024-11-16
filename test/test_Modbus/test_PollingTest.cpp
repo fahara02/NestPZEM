@@ -99,7 +99,7 @@ void PollingTest::periodicPolling()
 
             if(pollDevice1)
             {
-                ModbusMessage modbusMessage;
+                TTLModbusMessage modbusMessage;
                 Serial.println("decoding message device 1...");
                 std::vector<uint8_t> randomDataVector = device1._pzem.sendRandomData();
                 uint8_t randomData1[randomDataVector.size()]; // Size based on vector length
@@ -109,7 +109,7 @@ void PollingTest::periodicPolling()
                 Serial.println("getting raw data for device 1 from modbus message...");
                 const uint8_t* data = modbusMessage.getValidRawData();
 
-                ModbusMessage modbusMessage2;
+                 TTLModbusMessage  modbusMessage2;
                 Serial.println("decoding message device 2...");
                 TEST_ASSERT_TRUE(modbusMessage2.decodeMessage(testData2, sizeof(testData2), true));
                 Serial.println("getting raw data for device 2 from modbus message...");

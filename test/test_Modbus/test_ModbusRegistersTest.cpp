@@ -1,5 +1,5 @@
 #include <unity.h>
-#include "ModbusMessage.h"
+#include "TTL_Modbus_Message.h"
 #include "ModbusRegisters.hpp"
 #include "ModbusRegistersTest.hpp"
 #include "IModbusDevice.hpp"
@@ -60,10 +60,10 @@ void ModbusRegistersTest::test_UpdateRegisters()
     uint16_t address = 0x0000; // Starting address of IR
     uint8_t numInputRegisters = 7;
 
-    ModbusMessage modbusMessage;
+    TTLModbusMessage modbusMessage;
     TEST_ASSERT_TRUE(modbusMessage.decodeMessage(testData, sizeof(testData), true));
 
-    ModbusMessage modbusMessage2;
+    TTLModbusMessage modbusMessage2;
     TEST_ASSERT_TRUE(modbusMessage2.decodeMessage(testData2, sizeof(testData2), true));
 
     Serial.println(" memory usage After ModbusMessage  decode --2");

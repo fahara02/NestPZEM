@@ -79,13 +79,14 @@ class PZEMModbus
     }
 
    public:
-    // Singleton instance creation
-    static PZEMModbus& getInstance(std::unique_ptr<ModbusServerTCPasync> server,
-                                   std::shared_ptr<pzemCore::PZEMDevice> device)
-    {
-        static PZEMModbus instance(std::move(server), device);
-        return instance;
-    }
+
+template <typename... Devices>
+static PZEMModbus& getInstance(std::unique_ptr<ModbusServerTCPasync> server, Devices&&... devicePtrs)
+{
+    static PZEMModbus instance(std::move(server), std::forward<Devices>(devicePtrs)...);
+    return instance;
+}
+
 
     // Handle Modbus Function Code 03 (Read Holding Registers)
     ModbusMessage FC03(const ModbusMessage& request)

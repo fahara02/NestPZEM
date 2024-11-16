@@ -19,38 +19,6 @@ namespace pzemCore
 {
 static const char* POWER_METER_TAG __attribute__((unused)) = "POWER_METER";
 
-// struct NamePlate
-// {
-//     PZEMModel model;
-//     uint8_t id;
-//     uint8_t slaveAddress;
-//     uint8_t lineNo;
-//     Phase phase;
-//     std::unique_ptr<char[]> meterName;
-//     NamePlate() :
-//         model(PZEMModel::NOT_SET),
-//         id(255),
-//         slaveAddress(static_cast<uint8_t>(tmbus::SLAVE_ADDRESS::ADDR_ANY)),
-//         lineNo(0),
-//         phase(Phase::SINGLE_PHASE),
-//         meterName(nullptr)
-//     {
-//     }
-//     NamePlate(PZEMModel m, uint8_t id, uint8_t addr, uint8_t ln = 0, Phase p =
-//     Phase::SINGLE_PHASE,
-//               const char* name = nullptr) :
-//         model(m), id(id), slaveAddress(addr), lineNo(ln), phase(p)
-//     {
-//         if(!name || !*name)
-//         {
-//             meterName.reset(new char[9]); // i.e. PZEM-123
-//             sprintf(meterName.get(), "PZEM-%d", id);
-//         }
-//         else
-//             meterName.reset(strcpy(new char[strlen(name) + 1], name));
-//     }
-//     ~NamePlate() = default;
-// };
 struct NamePlate
 {
     PZEMModel model;
@@ -120,8 +88,10 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     // tmbus::ModbusRegisters& _registers;
     std::shared_ptr<tmbus::ModbusRegisters> _registers;
     std::array<uint16_t, maxJobCardRegisters> _outBox;
+     
 
    public:
+   SemaphoreHandle_t _updateSemaphore = nullptr;
     explicit PowerMeter(std::shared_ptr<tmbus::ModbusRegisters> mr, PZEMModel m, uint8_t id,
                         uint8_t addr, uint8_t ln = 0, Phase p = Phase::SINGLE_PHASE,
                         const char* nt = nullptr) :
@@ -132,24 +102,32 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
         _namePlate(m, id, addr, ln, p, nt),
         _jobcard(m, _namePlate)
     {
-        // ESP_LOGI(POWER_METER_TAG, "Power meter provided register ptr set to %p",
-        // _registers.get());
+       
         _registers->registerUpdateCallback(
             [this](bool registerUpdated, tmbus::ModbusRegisters::Register* reg) {
                 this->onRegisterUpdated(registerUpdated, reg);
             });
+
+        _updateSemaphore = xSemaphoreCreateBinary();
+    if (_updateSemaphore == nullptr) {
+        ESP_LOGE(POWER_METER_TAG , "Failed to create update semaphore.");
+    }
+
     }
     virtual ~PowerMeter() override {}
     virtual uint8_t getaddr() const;
     uint8_t getId() const { return _namePlate.id; }
-    virtual bool updateMeters() = 0;
-    void updateMetrics();
+   
+ 
     virtual bool resetEnergyCounter() = 0;
 
+    void updateMetrics();
+    virtual bool updateMeters() = 0;
     bool updateJobCard();
     bool updateOutBox();
-    void handleEvent(Event e);
+    void updateLatestMeasures();
 
+    void handleEvent(Event e);
     void resetPoll() const override;
     void print() override;
 
@@ -158,7 +136,7 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     const JobCard& getJobCard() const;
     const pzemCore::powerMeasure& getMeasures() const;
     const std::array<uint16_t, maxJobCardRegisters>& getOutBox() const;
-    void updateLatestMeasures();
+   
     bool getMeter(const tmbus::ModbusRegisters::Register* reg);
     State getState() const;
 
