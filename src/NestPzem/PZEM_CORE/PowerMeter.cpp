@@ -121,7 +121,7 @@ bool PowerMeter::updateJobCard()
 
     if(pm.isValid())
     {
-        _jobcard.lastUpdate_us = esp_timer_get_time();
+        _jobcard.lastUpdate_us = _jobcard.pm.lastMeasured();
 
         _jobcard.dataAge_ms = dataAge();
         _jobcard.dataStale = dataStale();

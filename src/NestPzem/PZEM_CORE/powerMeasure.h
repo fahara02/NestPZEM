@@ -53,6 +53,7 @@ struct powerMeasure
         const;
     bool setField(tmbus::MeterType field, float scaledValue);
     float getField(tmbus::MeterType field) const;
+
     void print();
 
    private:
