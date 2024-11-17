@@ -123,3 +123,53 @@ cl : command line  error D8021: invalid numeric argument '/Wno-frame-address' [D
 
 
 
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: D:/_0_DEV_SOFTWARE/PIO_ESPIDF/NestPZEM/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_9d4d4.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.9.8+b34f75857 for .NET Framework
+
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  cl /c /W1 /WX- /diagnostics:column /O2 /D _MBCS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_9d4d4.dir\Debug\\" /Fd"cmTC_9d4d4.dir\Debug\vc143.pdb" /external:W1 /Gd /TC /errorReport:queue  -mlongcalls -Wno-frame-address "G:\esp\esp-idf-tools\Espressif\tools\cmake\3.23.1\share\cmake-3.23\Modules\CMakeCCompilerABI.c"
+cl : command line  error D8021: invalid numeric argument '/Wno-frame-address' [D:\_0_DEV_SOFTWARE\PIO_ESPIDF\NestPZEM\build\CMakeFiles\CMakeTmp\cmTC_9d4d4.vcxproj]
+
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: D:/_0_DEV_SOFTWARE/PIO_ESPIDF/NestPZEM/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_96d1e.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.9.8+b34f75857 for .NET Framework
+
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  cl /c /W1 /WX- /diagnostics:column /O2 /D _MBCS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_96d1e.dir\Debug\\" /Fd"cmTC_96d1e.dir\Debug\vc143.pdb" /external:W1 /Gd /TC /errorReport:queue  -mlongcalls -Wno-frame-address D:\_0_DEV_SOFTWARE\PIO_ESPIDF\NestPZEM\build\CMakeFiles\CMakeTmp\testCCompiler.c
+cl : command line  error D8021: invalid numeric argument '/Wno-frame-address' [D:\_0_DEV_SOFTWARE\PIO_ESPIDF\NestPZEM\build\CMakeFiles\CMakeTmp\cmTC_96d1e.vcxproj]
+
+
+
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: D:/_0_DEV_SOFTWARE/PIO_ESPIDF/NestPZEM/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_bef52.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.9.8+b34f75857 for .NET Framework
+
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  cl /c /W1 /WX- /diagnostics:column /O2 /D _MBCS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_bef52.dir\Debug\\" /Fd"cmTC_bef52.dir\Debug\vc143.pdb" /external:W1 /Gd /TC /errorReport:queue  -mlongcalls -Wno-frame-address "G:\esp\esp-idf-tools\Espressif\tools\cmake\3.23.1\share\cmake-3.23\Modules\CMakeCCompilerABI.c"
+cl : command line  error D8021: invalid numeric argument '/Wno-frame-address' [D:\_0_DEV_SOFTWARE\PIO_ESPIDF\NestPZEM\build\CMakeFiles\CMakeTmp\cmTC_bef52.vcxproj]
+
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: D:/_0_DEV_SOFTWARE/PIO_ESPIDF/NestPZEM/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_a04ed.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:m && MSBuild version 17.9.8+b34f75857 for .NET Framework
+
+  Microsoft (R) C/C++ Optimizing Compiler Version 19.39.33523 for x64
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  cl /c /W1 /WX- /diagnostics:column /O2 /D _MBCS /D "CMAKE_INTDIR=\"Debug\"" /Gm- /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_a04ed.dir\Debug\\" /Fd"cmTC_a04ed.dir\Debug\vc143.pdb" /external:W1 /Gd /TC /errorReport:queue  -mlongcalls -Wno-frame-address D:\_0_DEV_SOFTWARE\PIO_ESPIDF\NestPZEM\build\CMakeFiles\CMakeTmp\testCCompiler.c
+cl : command line  error D8021: invalid numeric argument '/Wno-frame-address' [D:\_0_DEV_SOFTWARE\PIO_ESPIDF\NestPZEM\build\CMakeFiles\CMakeTmp\cmTC_a04ed.vcxproj]
+
+
+

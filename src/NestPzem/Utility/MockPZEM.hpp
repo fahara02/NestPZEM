@@ -2,11 +2,16 @@
 #define MOCK_PZEM_HPP
 #include <array>
 #include <cstdlib>
+#include <cmath>
 #include <ctime>
 #include <cstdint>
 #include <vector>
+#include <algorithm>
+#include <esp_timer.h>
+#include <memory>
 #include "PZEMDevice.hpp"
 #include "ModbusDefaults.h"
+#include "esp_log.h"
 using namespace pzemCore;
 using namespace tmbus;
 
@@ -27,10 +32,13 @@ class FakeMeter
         ALARM_STATUS,
         COUNT // Helper to track the number of types
     };
+    enum class DeviceState { IDLE, NORMAL, OVERLOAD };
 
    private:
     uint8_t slaveAddress;
     bool isDCModel;
+    DeviceState currentState;
+    int64_t lastUpdate; // Use esp_timer_get_time() for timing in microseconds
 
     struct Range
     {
@@ -53,12 +61,17 @@ class FakeMeter
         const std::array<uint32_t, static_cast<size_t>(FakeMeterType::COUNT)>& devValues);
     void setRandomizationProbability(
         const std::array<float, static_cast<size_t>(FakeMeterType::COUNT)>& probabilities);
+    void setDeviceState(DeviceState state);
+    uint32_t getCurrentValues(FakeMeterType type) const;
 
    private:
     void updateValues();
-
     uint32_t applyDeviation(uint32_t value, uint32_t deviation, float probability);
+    float applySinusoidalDeviation(uint32_t baseValue, uint32_t deviation, float timeStep);
+    uint32_t addNoise(uint32_t value, uint32_t noiseLevel);
+    void updateRangesBasedOnState();
     uint16_t calculateCRC(const std::vector<uint8_t>& data);
+    void simulateFailure();
 };
 
 FakeMeter::FakeMeter(uint8_t slaveAddr, bool isDC) : slaveAddress(slaveAddr), isDCModel(isDC)
@@ -78,7 +91,7 @@ FakeMeter::FakeMeter(uint8_t slaveAddr, bool isDC) : slaveAddress(slaveAddr), is
     _deviation = {10, 20, 20, 5, 10, 10, 10, 1};
     _randomizationProbability = {0.2, 0.3, 0.3, 0.1, 0.05, 0.1, 0.1, 0.05};
 
-    std::srand(static_cast<unsigned>(std::time(0))); // Seed the random number generator
+    std::srand(static_cast<unsigned>(esp_timer_get_time())); // Seed the random number generator
 }
 
 void FakeMeter::setInitialValues(
@@ -91,6 +104,11 @@ void FakeMeter::setDeviation(
     const std::array<uint32_t, static_cast<size_t>(FakeMeterType::COUNT)>& devValues)
 {
     _deviation = devValues;
+}
+void FakeMeter::setDeviceState(DeviceState state)
+{
+    currentState = state;
+    updateRangesBasedOnState();
 }
 
 void FakeMeter::setRandomizationProbability(
@@ -108,11 +126,27 @@ uint32_t FakeMeter::applyDeviation(uint32_t value, uint32_t deviation, float pro
     }
     return value;
 }
+float FakeMeter::applySinusoidalDeviation(uint32_t baseValue, uint32_t deviation, float timeStep)
+{
+    // Simulate sinusoidal variation
+    float angle = fmod(timeStep * 2.0f * M_PI, 2.0f * M_PI); // Normalize angle to [0, 2π]
+    float sinValue = sin(angle);                             // Generate sinusoidal wave
+    return baseValue + deviation * sinValue;                 // Add sinusoidal deviation
+}
+uint32_t FakeMeter::addNoise(uint32_t value, uint32_t noiseLevel)
+{
+    return value + (std::rand() % noiseLevel);
+}
 
 void FakeMeter::updateValues()
 {
+    uint64_t currentTime = esp_timer_get_time(); // ESP32-specific time function in microseconds
+    float timeStep =
+        (currentTime % 1000000) / 1000000.0f; // Normalize to seconds within 1-second period
+
     for(size_t i = 0; i < static_cast<size_t>(FakeMeterType::COUNT); ++i)
     {
+        // Skip DC-only or AC-only parameters if necessary
         if(isDCModel
            && (i == static_cast<size_t>(FakeMeterType::FREQUENCY)
                || i == static_cast<size_t>(FakeMeterType::POWER_FACTOR)))
@@ -120,9 +154,12 @@ void FakeMeter::updateValues()
             continue;
         }
 
+        // Apply sinusoidal and random deviations
+        _currentValues[i] = applySinusoidalDeviation(_currentValues[i], _deviation[i], timeStep);
         _currentValues[i] =
             applyDeviation(_currentValues[i], _deviation[i], _randomizationProbability[i]);
 
+        // Clamp the values within the defined range
         _currentValues[i] = std::max(_ranges[i].min, std::min(_ranges[i].max, _currentValues[i]));
     }
 }
@@ -186,7 +223,31 @@ std::vector<uint8_t> FakeMeter::generateMockData()
 
     return mockData;
 }
-
+uint32_t FakeMeter::getCurrentValues(FakeMeterType type) const
+{
+    return _currentValues[static_cast<size_t>(type)];
+}
+void FakeMeter::updateRangesBasedOnState()
+{
+    switch(currentState)
+    {
+        case DeviceState::IDLE:
+            // Example: Lower voltage and current ranges during idle
+            _ranges[static_cast<size_t>(FakeMeterType::VOLTAGE)] = {1000, 1200};
+            _ranges[static_cast<size_t>(FakeMeterType::CURRENT_32)] = {0, 500};
+            break;
+        case DeviceState::NORMAL:
+            // Restore normal ranges
+            _ranges[static_cast<size_t>(FakeMeterType::VOLTAGE)] = {800, 2600};
+            _ranges[static_cast<size_t>(FakeMeterType::CURRENT_32)] = {0, 30000};
+            break;
+        case DeviceState::OVERLOAD:
+            // Example: Increase power and current ranges
+            _ranges[static_cast<size_t>(FakeMeterType::POWER)] = {500000, 900000};
+            _ranges[static_cast<size_t>(FakeMeterType::CURRENT_32)] = {20000, 30000};
+            break;
+    }
+}
 uint16_t FakeMeter::calculateCRC(const std::vector<uint8_t>& data)
 {
     uint16_t crc = 0xFFFF;
@@ -196,22 +257,60 @@ uint16_t FakeMeter::calculateCRC(const std::vector<uint8_t>& data)
     }
     return crc;
 }
-class MockPZEM
+
+void FakeMeter::simulateFailure()
+{
+    // Simulates a failure by setting out-of-range or invalid values
+    _currentValues.fill(0xFFFFFFFF); // Simulate device communication error or reset
+}
+
+void debugPrintMockData(const std::vector<uint8_t>& data)
+{
+    printf("Mock Data: ");
+    for(uint8_t byte: data)
+    {
+        printf("%02X ", byte);
+    }
+    printf("\n");
+}
+
+class MockPZEM : public PZEMDevice
 {
    public:
-    MockPZEM(PZEMModel model, uint8_t id, uint8_t addr) :
-        _model(model), _id(id), _addr(addr), _meter(addr, model != PZEMModel::PZEM004T)
+    MockPZEM(PZEMModel model, uint8_t id, uint8_t addr, uint8_t lineNo = 0,
+             Phase phase = Phase::SINGLE_PHASE, const char* nametag = nullptr) :
+        PZEMDevice(model, id, addr, lineNo, phase, nametag),
+        _meter(addr, model != PZEMModel::PZEM004T)
     {
     }
-
     std::vector<uint8_t> sendRandomData() { return _meter.generateMockData(); }
+    // Override updateMeters to update job card with mock data
+    bool updateMeters() override
+    {
+        const uint16_t address = 0x0000; // Starting address
+        const uint8_t numInputRegisters = 7;
+        std::vector<uint8_t> mockData = _meter.generateMockData();
+        uint8_t SerializeData[mockData.size()];
+        std::copy(mockData.begin(), mockData.end(), SerializeData);
+
+        TTLModbusMessage tmsg;
+        tmsg.decodeMessage(SerializeData, sizeof(SerializeData), true);
+        const uint8_t* data = tmsg.getValidRawData();
+        std::shared_ptr<tmbus::ModbusRegisters> mReg1 = this->getModbusRegisters();
+        if(mReg1.get()->update(address, numInputRegisters, data, true))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
    private:
-    PZEMModel _model;
-    uint8_t _id;
-    uint8_t _addr;
     FakeMeter _meter;
 };
+
 } // namespace Utility
 
 #endif

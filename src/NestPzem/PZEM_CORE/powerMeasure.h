@@ -100,7 +100,7 @@ inline void powerMeasure::initializeRanges()
             Range<uint32_t>(80, 260),  // Voltage
             Range<uint32_t>(0, 100),   // Current
             Range<uint32_t>(0, 23000), // Power
-            Range<uint32_t>(0, 9999),  // Energy
+            Range<uint32_t>(0, 99999), // Energy
             Range<uint32_t>(45, 65),   // Frequency
             Range<uint32_t>(0, 1),     // Power Factor
             Range<uint32_t>(0, 1)      // Alarms
@@ -113,7 +113,7 @@ inline void powerMeasure::initializeRanges()
             Range<uint32_t>(0, 300),   // Voltage
             Range<uint32_t>(0, 300),   // Current
             Range<uint32_t>(0, 90000), // Power
-            Range<uint32_t>(0, 9999),  // Energy
+            Range<uint32_t>(0, 99999), // Energy
             Range<uint32_t>(0, 0),     // Frequency (not applicable for DC)
             Range<uint32_t>(0, 0),     // Power Factor
             Range<uint32_t>(0, 1)      // Alarms

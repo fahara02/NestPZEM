@@ -78,7 +78,6 @@ void PZEMDevice::updateMetersTask()
         // Wait for the semaphore (i.e., a signal to update)
         if(xSemaphoreTake(_updateSemaphore, portMAX_DELAY) == pdTRUE)
         {
-            ESP_LOGI(DEVICE_TAG, "Semaphore received, updating meters...");
             // Perform the update
             updateMeters();
             updateJobCard();
@@ -235,9 +234,14 @@ transmit* PZEMDevice::readHoldingRegisters()
 
 bool PZEMDevice::parse_RXMessage(const receive* rxMessage)
 {
-    if(!rxMessage->isValid) return false;
-    if(rxMessage->addr != _addr) return false;
+    if(!rxMessage->isValid)
+    {
+        ESP_LOGE(DEVICE_TAG, " message is invalid ");
+        return false;
+    }
 
+    if(rxMessage->addr != _addr) return false;
+    ESP_LOGI(DEVICE_TAG, " message is for %d address", rxMessage->addr);
     FunctionCode code = static_cast<FunctionCode>(rxMessage->cmd);
     const uint8_t* data = rxMessage->msg.getValidRawData();
     const uint8_t length = rxMessage->size;

@@ -39,10 +39,7 @@ class Poller
         T* device = static_cast<T*>(pvTimerGetTimerID(xTimer));
         if(device)
         {
-            
-
             device->updateMetrics();
-           // device->print();
         }
     };
 };
