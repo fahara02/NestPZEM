@@ -83,15 +83,14 @@ struct JobCard
 class PowerMeter : public Poller<pzemCore::PowerMeter>
 {
    private:
-    static constexpr uint8_t maxJobCardRegisters = 38;
+    static constexpr uint8_t maxJobCardRegisters = 40;
     std::atomic<State> _state{State::INIT};
     // tmbus::ModbusRegisters& _registers;
     std::shared_ptr<tmbus::ModbusRegisters> _registers;
     std::array<uint16_t, maxJobCardRegisters> _outBox;
-     
 
    public:
-   SemaphoreHandle_t _updateSemaphore = nullptr;
+    SemaphoreHandle_t _updateSemaphore = nullptr;
     explicit PowerMeter(std::shared_ptr<tmbus::ModbusRegisters> mr, PZEMModel m, uint8_t id,
                         uint8_t addr, uint8_t ln = 0, Phase p = Phase::SINGLE_PHASE,
                         const char* nt = nullptr) :
@@ -102,23 +101,21 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
         _namePlate(m, id, addr, ln, p, nt),
         _jobcard(m, _namePlate)
     {
-       
         _registers->registerUpdateCallback(
             [this](bool registerUpdated, tmbus::ModbusRegisters::Register* reg) {
                 this->onRegisterUpdated(registerUpdated, reg);
             });
 
         _updateSemaphore = xSemaphoreCreateBinary();
-    if (_updateSemaphore == nullptr) {
-        ESP_LOGE(POWER_METER_TAG , "Failed to create update semaphore.");
-    }
-
+        if(_updateSemaphore == nullptr)
+        {
+            ESP_LOGE(POWER_METER_TAG, "Failed to create update semaphore.");
+        }
     }
     virtual ~PowerMeter() override {}
     virtual uint8_t getaddr() const;
     uint8_t getId() const { return _namePlate.id; }
-   
- 
+
     virtual bool resetEnergyCounter() = 0;
 
     void updateMetrics();
@@ -136,7 +133,7 @@ class PowerMeter : public Poller<pzemCore::PowerMeter>
     const JobCard& getJobCard() const;
     const pzemCore::powerMeasure& getMeasures() const;
     const std::array<uint16_t, maxJobCardRegisters>& getOutBox() const;
-   
+
     bool getMeter(const tmbus::ModbusRegisters::Register* reg);
     State getState() const;
 

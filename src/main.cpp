@@ -66,20 +66,23 @@ void setup()
 
     // Start WiFi connection
     wm.begin();
+    delay(4000);
 
-    IPAddress wIP = WiFi.localIP();
-    Serial.printf("WIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);
-    Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID_1, PZEM_ADDRESS_1);
+    Serial.printf("\ncreating the PZEM Device with id %d and address %d ", PZEM_ID_1,
+                  PZEM_ADDRESS_1);
     pzemDevice1 = std::make_shared<Utility::MockPZEM>(model, PZEM_ID_1, PZEM_ADDRESS_1);
-    Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID_2, PZEM_ADDRESS_2);
-    // pzemDevice2 = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID_2, PZEM_ADDRESS_2);
+    Serial.printf("\ncreating the PZEM Device with id %d and address %d ", PZEM_ID_2,
+                  PZEM_ADDRESS_2);
+    pzemDevice2 = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID_2, PZEM_ADDRESS_2);
 
-    Serial.printf("id of pzem device is %d", pzemDevice1->getId());
     pzemDevice1->autopoll(true);
-    // pzemDevice2->autopoll(true);
+    pzemDevice2->autopoll(true);
     auto modbus_server = std::make_unique<ModbusServerTCPasync>();
 
-    PZEMModbus::getInstance(std::move(modbus_server), pzemDevice1).startServer();
+    PZEMModbus::getInstance(std::move(modbus_server), pzemDevice1, pzemDevice2).startServer();
+    IPAddress wIP = WiFi.localIP();
+    Serial.printf("WIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);
+    Serial.printf("NestPZEM power measurement starts....");
 }
 
 void loop() { vTaskDelete(NULL); }

@@ -14,7 +14,7 @@ class PZEMModbus
 {
    private:
     static constexpr uint8_t maxDevices = 5;
-    static constexpr uint8_t maxRegisters = 38;
+    static constexpr uint8_t maxRegisters = 40;
 
     // Register Offsets and Sizes
     struct RegisterLayout
@@ -79,14 +79,13 @@ class PZEMModbus
     }
 
    public:
-
-template <typename... Devices>
-static PZEMModbus& getInstance(std::unique_ptr<ModbusServerTCPasync> server, Devices&&... devicePtrs)
-{
-    static PZEMModbus instance(std::move(server), std::forward<Devices>(devicePtrs)...);
-    return instance;
-}
-
+    template <typename... Devices>
+    static PZEMModbus& getInstance(std::unique_ptr<ModbusServerTCPasync> server,
+                                   Devices&&... devicePtrs)
+    {
+        static PZEMModbus instance(std::move(server), std::forward<Devices>(devicePtrs)...);
+        return instance;
+    }
 
     // Handle Modbus Function Code 03 (Read Holding Registers)
     ModbusMessage FC03(const ModbusMessage& request)
@@ -156,7 +155,15 @@ static PZEMModbus& getInstance(std::unique_ptr<ModbusServerTCPasync> server, Dev
                     [this](const ModbusMessage& request) { return this->FC03(request); });
             }
         }
-        MBServer->start(502, 1, 20000);
+        if(MBServer->start(502, 4, 20000))
+        {
+            Serial.printf("Modbus server started on port 502\n");
+        }
+        else
+        {
+            Serial.printf("Failed to start Modbus server! restarting\n");
+            ESP.restart();
+        };
     }
 };
 

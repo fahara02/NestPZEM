@@ -37,7 +37,8 @@ bool PowerMeter::getMeter(const tmbus::ModbusRegisters::Register* reg)
 
 void PowerMeter::updateMetrics()
 {
-    if (_updateSemaphore) {
+    if(_updateSemaphore)
+    {
         xSemaphoreGive(_updateSemaphore);
     }
     updateOutBox();
@@ -85,18 +86,27 @@ bool PowerMeter::updateOutBox()
     addFloatToRegisters(jobCard.pm.getField(MeterType::PF));
     addFloatToRegisters(jobCard.pm.getField(MeterType::ALARM_STATUS));
 
+    // Safely map a signed 64-bit value to four 16-bit registers (MSB first)
+    auto addInt64ToRegisters = [&](int64_t value) {
+        uint64_t safeValue =
+            static_cast<uint64_t>(value < 0 ? 0 : value); // Default negative values to 0
+        if(index + 4 <= maxJobCardRegisters)
+        { // Ensure space for 4 registers
+            _outBox[index++] =
+                static_cast<uint16_t>((safeValue >> 48) & 0xFFFF); // Top 16 bits (MSB)
+            _outBox[index++] = static_cast<uint16_t>((safeValue >> 32) & 0xFFFF); // Next 16 bits
+            _outBox[index++] = static_cast<uint16_t>((safeValue >> 16) & 0xFFFF); // Next 16 bits
+            _outBox[index++] = static_cast<uint16_t>(safeValue & 0xFFFF); // Bottom 16 bits (LSB)
+        }
+    };
+    // Map the 64-bit fields
+    addInt64ToRegisters(jobCard.poll_us);
+    addInt64ToRegisters(jobCard.lastUpdate_us);
+    addInt64ToRegisters(jobCard.dataAge_ms);
     // Additional fields with bounds checks
-    if(index + 8 <= maxJobCardRegisters)
-    { // 8 registers required for these fields
-        _outBox[index++] = static_cast<uint16_t>((jobCard.poll_us >> 16) & 0xFFFF);
-        _outBox[index++] = static_cast<uint16_t>(jobCard.poll_us & 0xFFFF);
-        _outBox[index++] = static_cast<uint16_t>((jobCard.lastUpdate_us >> 16) & 0xFFFF);
-        _outBox[index++] = static_cast<uint16_t>(jobCard.lastUpdate_us & 0xFFFF);
-        _outBox[index++] = static_cast<uint16_t>((jobCard.dataAge_ms >> 16) & 0xFFFF);
-        _outBox[index++] = static_cast<uint16_t>(jobCard.dataAge_ms & 0xFFFF);
-        _outBox[index++] = jobCard.dataStale ? 1 : 0;
-        _outBox[index++] = static_cast<uint16_t>(jobCard.deviceState.load());
-    }
+
+    _outBox[index++] = jobCard.dataStale ? 1 : 0;
+    _outBox[index++] = static_cast<uint16_t>(jobCard.deviceState.load());
 
     // Ensure the entire process succeeded
     return index <= maxJobCardRegisters;

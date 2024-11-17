@@ -69,27 +69,26 @@ void WiFiManager::connect()
 }
 void WiFiManager::pollWiFiStatus()
 {
+    unsigned long startMillis = millis();
     while(true)
     {
         if(_state == State::CONNECTING)
         {
-            if(WiFi.isConnected())
+            if(WiFi.isConnected() && WiFi.localIP().toString() != "0.0.0.0")
             {
                 _state = State::CONNECTED;
                 log("Connected to WiFi.");
+                log(WiFi.localIP().toString().c_str());
                 if(_onConnected)
                 {
                     _onConnected();
                 }
             }
-            else if(_currentRetries >= _maxRetries)
+            else if(_currentRetries >= _maxRetries || (millis() - startMillis > _timeoutMs))
             {
                 _state = State::FAILED;
-                log("Failed to connect to WiFi after retries.");
-                if(_onFailure)
-                {
-                    _onFailure();
-                }
+                log("Failed to connect to WiFi after retries or timeout.");
+                ESP.restart(); // Restart on failure
             }
             else
             {
@@ -108,9 +107,11 @@ void WiFiManager::pollWiFiStatus()
             }
             connect();
         }
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Check status every second
+
+        vTaskDelay(pdMS_TO_TICKS(2000)); // Check status every 2 seconds
     }
 }
+
 void WiFiManager::handleWiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     switch(event)

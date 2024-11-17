@@ -2,6 +2,7 @@
 #define PZEM_WIFI_MANAGER_HPP
 
 #include <WiFi.h>
+#include <WiFiClient.h>
 #include <functional>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
