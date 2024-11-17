@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <WiFi.h>
+
 #include "FS.h"
 #include <LittleFS.h>
 #include <time.h>
@@ -21,6 +21,7 @@
 #include "pb_decode.h"
 #include "pData.pb.h"
 #include "PZEMModbus.hpp"
+#include "PZEM_WIFI_MANAGER.hpp"
 
 #define FORMAT_LITTLEFS_IF_FAILED true
 #define PZEM_UART_PORT UART_NUM_1
@@ -54,14 +55,18 @@ std::shared_ptr<pzemCore::PZEMDevice> pzemDevice2 = nullptr;
 void setup()
 {
     Serial.begin(115200);
+    Utility::WiFiManager& wm = Utility::WiFiManager::getInstance(ssid, pass, 5, 10000, true);
 
-    WiFi.begin(ssid, pass);
-    delay(200);
-    while(WiFi.status() != WL_CONNECTED)
-    {
-        Serial.print(". ");
-        delay(500);
-    }
+    wm.setOnConnectedHandler([&wm]() {
+        Serial.printf("Successfully connected to: %s\n", ssid);
+        Serial.printf("IP Address: %s\n", wm.getIPAddress());
+    });
+
+    wm.setOnDisconnectedHandler([]() { Serial.printf("Disconnected from: %s\n", ssid); });
+
+    // Start WiFi connection
+    wm.begin();
+
     IPAddress wIP = WiFi.localIP();
     Serial.printf("WIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);
     Serial.printf("creating the PZEM Device with id %d and address %d ", PZEM_ID_1, PZEM_ADDRESS_1);

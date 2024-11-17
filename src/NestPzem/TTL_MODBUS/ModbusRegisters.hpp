@@ -78,7 +78,6 @@ class ModbusRegisters
     bool updateSingle(MeterType type, const uint8_t* buf, bool swapBytes);
     bool updateSingleWrite(const uint8_t* buf, bool swapBytes);
 
-    // pzemCore::powerMeasure getPowerMeasures() const;
     uint16_t adress(MeterType type) const;
     uint16_t length(MeterType type) const;
     pzemCore::PZEMModel getModel() { return _model; }
