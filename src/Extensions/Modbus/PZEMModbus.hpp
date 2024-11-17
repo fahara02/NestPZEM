@@ -14,6 +14,8 @@ class PZEMModbus
 {
    private:
     static constexpr uint8_t maxDevices = 5;
+    static constexpr uint8_t maxClients = 4;
+    static constexpr uint32_t serverTimeout = 20000;
     static constexpr uint8_t maxRegisters = 40;
 
     // Register Offsets and Sizes
@@ -155,13 +157,13 @@ class PZEMModbus
                     [this](const ModbusMessage& request) { return this->FC03(request); });
             }
         }
-        if(MBServer->start(502, 4, 20000))
+        if(MBServer->start(502, maxClients, serverTimeout))
         {
-            Serial.printf("Modbus server started on port 502\n");
+            Serial.printf("\nModbus server started on port 502\n");
         }
         else
         {
-            Serial.printf("Failed to start Modbus server! restarting\n");
+            Serial.printf("\nFailed to start Modbus server! restarting\n");
             ESP.restart();
         };
     }
