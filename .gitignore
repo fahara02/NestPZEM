@@ -1,7 +1,8 @@
 .pio
 .vscode
-.build
+build
 cache
+CMakeFiles
 managed_components
 dependencies.lock
 sdkconfig.esp32dev
