@@ -1,5 +1,6 @@
 #ifndef PZEM_MODBUS_HPP
 #define PZEM_MODBUS_HPP
+#include "RTUNode.hpp"
 
 #include "ModbusServerTCPasync.h"
 #include "PZEMDevice.hpp"
@@ -144,7 +145,60 @@ class PZEMModbus
 
         return response;
     }
+    ModbusMessage FC05(const ModbusMessage& request)
+    {
+        updateRegisters();
+        ModbusMessage response;
 
+        // Parse the request to extract the address and number of words
+        uint16_t address, words;
+        request.get(2, address);
+        request.get(4, words);
+
+        // Validate the server ID
+        uint8_t serverID = request.getServerID();
+        uint8_t functionCode = request.getFunctionCode();
+        if(serverID == 0 || serverID > maxDevices)
+        {
+            response.setError(serverID, functionCode, INVALID_SERVER);
+            return response;
+        }
+
+        // Validate the address and word count
+        if(address + words > maxRegisters)
+        {
+            response.setError(serverID, functionCode, ILLEGAL_DATA_ADDRESS);
+            return response;
+        }
+
+        // Ensure that words is greater than 0
+        if(words == 0)
+        {
+            response.setError(serverID, functionCode, ILLEGAL_DATA_VALUE);
+            return response;
+        }
+
+        // Prepare the response header
+
+        response.add(serverID, functionCode, (uint8_t)(words * 2));
+
+        // Add the requested registers to the response
+        if(xSemaphoreTake(registerMutex, portMAX_DELAY) == pdTRUE)
+        {
+            const auto& deviceRegisters = jobCardRegisters[serverID - 1];
+            for(uint16_t i = address; i < address + words; ++i)
+            {
+                response.add(deviceRegisters[i]);
+            }
+            xSemaphoreGive(registerMutex);
+        }
+        else
+        {
+            response.setError(serverID, functionCode, SERVER_DEVICE_BUSY);
+        }
+
+        return response;
+    }
     // Start Modbus Server
     void startServer()
     {
