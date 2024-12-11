@@ -70,10 +70,10 @@ void setup()
 
     Serial.printf("\ncreating the PZEM Device with id %d and address %d \n", PZEM_ID_1,
                   PZEM_ADDRESS_1);
-    pzemDevice1 = std::make_shared<Utility::MockPZEM>(model, PZEM_ID_1, PZEM_ADDRESS_1);
+    pzemDevice1 = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID_1, PZEM_ADDRESS_1);
     Serial.printf("\ncreating the PZEM Device with id %d and address %d \n", PZEM_ID_2,
                   PZEM_ADDRESS_2);
-    pzemDevice2 = std::make_shared<Utility::MockPZEM>(model, PZEM_ID_2, PZEM_ADDRESS_2);
+    pzemDevice2 = std::make_shared<pzemCore::PZEMDevice>(model, PZEM_ID_2, PZEM_ADDRESS_2);
 
     pzemDevice1->autopoll(true);
     pzemDevice2->autopoll(true);
