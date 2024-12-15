@@ -19,11 +19,11 @@ class PZEMModbus
     static constexpr uint8_t maxClients = 4;
     // Coil configuration
     static constexpr uint16_t MAX_COILS = 5;
-    static constexpr uint16_t UPS_IN_COIL_ADDR = 1000;
-    static constexpr uint16_t LOAD_BANK_1_COIL_ADDR = 1001;
-    static constexpr uint16_t LOAD_BANK_2_COIL_ADDR = 1002;
-    static constexpr uint16_t LOAD_BANK_3_COIL_ADDR = 1003;
-    static constexpr uint16_t OUTPUT_FAILURE_COIL_ADDR = 1003;
+    static constexpr uint16_t UPS_IN_COIL_ADDR = 0;
+    static constexpr uint16_t LOAD_BANK_1_COIL_ADDR = 1;
+    static constexpr uint16_t LOAD_BANK_2_COIL_ADDR = 2;
+    static constexpr uint16_t LOAD_BANK_3_COIL_ADDR = 3;
+    static constexpr uint16_t TEST_UPDATE_ADDR = 4;
     const std::array<uint8_t, MAX_COILS> coilGPIOs = {23, 22, 21, 19, 18};
     CoilData coils{MAX_COILS};
     static constexpr uint32_t serverTimeout = 20000;
@@ -81,12 +81,19 @@ class PZEMModbus
     void initGPIOs()
     {
         gpio_config_t io_conf = {};
-        io_conf.mode = GPIO_MODE_INPUT_OUTPUT_OD;
-        io_conf.pin_bit_mask = (1ULL << 23) | (1ULL << 22) | (1ULL << 21) | (1ULL << 19);
+        io_conf.mode = GPIO_MODE_OUTPUT_OD;
+        io_conf.pin_bit_mask =
+            (1ULL << 23) | (1ULL << 22) | (1ULL << 21) | (1ULL << 19) | (1ULL << 18);
         io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
         io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
         io_conf.intr_type = GPIO_INTR_DISABLE;
         gpio_config(&io_conf);
+        // Set GPIOs to HIGH to turn relays off
+        gpio_set_level(GPIO_NUM_23, 1);
+        gpio_set_level(GPIO_NUM_22, 1);
+        gpio_set_level(GPIO_NUM_21, 1);
+        gpio_set_level(GPIO_NUM_19, 1);
+        gpio_set_level(GPIO_NUM_18, 1);
     }
     // Update the Modbus register map from all devices
     void updateRegisters()
@@ -252,9 +259,10 @@ class PZEMModbus
         bool state = (value == 0xFF00);
         if(xSemaphoreTake(coilMutex, portMAX_DELAY) == pdTRUE)
         {
+            bool coil_state = !state;
             if(coils.set(address - UPS_IN_COIL_ADDR, state))
             {
-                updateGPIO(address, state);
+                updateGPIO(address, coil_state);
                 response.add(serverID, functionCode, address, value);
             }
             else
@@ -351,9 +359,12 @@ class PZEMModbus
                 MBServer->registerWorker(
                     i + 1, READ_HOLD_REGISTER,
                     [this](const ModbusMessage& request) { return this->FC03(request); });
+                MBServer->registerWorker(i + 1, WRITE_COIL, [this](const ModbusMessage& request) {
+                    return this->FC05(request);
+                });
             }
         }
-        uint8_t gpioServerID = maxDevices + 1;
+        uint8_t gpioServerID = 11;
         MBServer->registerWorker(gpioServerID, READ_COIL, [this](const ModbusMessage& request) {
             return this->FC01(request);
         });

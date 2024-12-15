@@ -79,7 +79,9 @@ void setup()
     pzemDevice2->autopoll(true);
     auto modbus_server = std::make_unique<ModbusServerTCPasync>();
 
-    PZEMModbus::getInstance(std::move(modbus_server), pzemDevice1, pzemDevice2).startServer();
+    auto& pzemModbus = PZEMModbus::getInstance(std::move(modbus_server), pzemDevice1, pzemDevice2);
+    pzemModbus.startServer();
+
     delay(2000);
     IPAddress wIP = WiFi.localIP();
     Serial.printf("\nWIFi IP address: %u.%u.%u.%u\n", wIP[0], wIP[1], wIP[2], wIP[3]);

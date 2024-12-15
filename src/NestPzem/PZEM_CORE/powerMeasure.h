@@ -176,8 +176,8 @@ inline bool powerMeasure::setField(tmbus::MeterType field, float scaledValue)
     }
     else
     {
-        ESP_LOGE(PM_TAG, "Value %0.2f is out of range! for Field %s ", scaledValue,
-                 Utility::ToString::meter(field));
+        // ESP_LOGE(PM_TAG, "Value %0.2f is out of range! for Field %s ", scaledValue,
+        //          Utility::ToString::meter(field));
     }
     return success;
 }
